@@ -6,8 +6,8 @@ on:
       - dev
 env:
   BUILD_HOST: ci.uffs.cc
-  BUILD_WEB_DIRECTORY: /home/ccuffsci/ci.uffs.cc/template
-  BUILD_WEB_URL: https://ci.uffs.cc/template
+  BUILD_WEB_DIRECTORY: /home/ccuffsci/ci.uffs.cc/api-cc
+  BUILD_WEB_URL: https://ci.uffs.cc/api-cc
 jobs:
   build-deploy-audit:
     name: Build, deploy and audit
