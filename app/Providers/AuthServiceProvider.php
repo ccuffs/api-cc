@@ -2,9 +2,8 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\Facades\Gate;
-use Laravel\Passport\Passport;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use App\Extensions\Authentication\PasetoAuthGuard;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -25,6 +24,17 @@ class AuthServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->registerPolicies();
-        Passport::routes();
+
+        $this->app['auth']->extend('paseto', function ($app, $name, array $config) {
+
+            $guard = new PasetoAuthGuard(
+                $app['auth']->createUserProvider($config['provider']),
+                $app['request']
+            );
+
+            $app->refresh('request', $guard, 'setRequest');
+
+            return $guard;
+        });
     }
 }

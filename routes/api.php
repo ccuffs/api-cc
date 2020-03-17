@@ -14,10 +14,48 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::post('login', 'AuthController@login');
-Route::post('register', 'AuthController@register');
- 
-Route::middleware('auth:api')->group(function () {
-    Route::get('user', 'AuthController@details');
-    Route::resource('products', 'ProductController');
+// Public routes 
+Route::get('/', function () {
+    return response()->json(['message' => 'Hello world, API!']);
+});
+
+// Defaults
+Route::post('/register', [
+    'as' => 'register',
+    'uses' => 'AuthController@register',
+]);
+
+Route::get('/verify/{token}', [
+    'as' => 'verify',
+    'uses' => 'AuthController@verify'
+]);
+
+// Auth routes
+Route::middleware('auth')->group(function () {
+    Route::post('/login', [
+        'as' => 'login',
+        'uses' => 'AuthController@login',
+    ]);
+
+    // Password reset
+    Route::post('/password/forgot', [
+        'as' => 'password.forgot',
+        'uses' => 'AuthController@forgotPassword'
+    ]);
+    Route::post('/password/recover/{token}', [
+        'as' => 'password.recover',
+        'uses' => 'AuthController@recoverPassword'
+    ]);
+
+    // Protected user endpoint
+    Route::get('/user', [
+        'uses' => 'AuthController@getUser',
+        'as' => 'user',
+        'middleware' => 'auth'
+    ]);
+});
+
+// Protected routes
+Route::middleware('auth')->group(function () {
+    
 });

@@ -7,13 +7,21 @@
         "laravel"
     ],
     "license": "MIT",
+    "repositories": [
+        {
+            "url": "https://github.com/ccuffs/auth-iduffs",
+            "type": "vcs"
+        }
+    ],
     "require": {
         "php": "^7.2.5",
+        "ccuffs/auth-iduffs": "dev-master",
         "fideloper/proxy": "^4.2",
         "fruitcake/laravel-cors": "^1.0",
         "guzzlehttp/guzzle": "^6.3",
         "laravel/framework": "^7.0",
-        "laravel/passport": "^8.4",
+        "paragonie/paseto": "^1.0",
+        "spatie/laravel-permission": "^3.11",
         "laravel/tinker": "^2.0"
     },
     "require-dev": {
@@ -55,10 +63,16 @@
             "@php artisan package:discover --ansi"
         ],
         "post-root-package-install": [
-            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
+            "composer keys",
+            "composer meta"
         ],
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi"
+        ],
+        "keys": [
+            "php artisan key:generate",
+            "php artisan auth:generate-paseto-key"
         ]
     }
 }

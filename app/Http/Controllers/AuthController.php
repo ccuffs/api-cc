@@ -2,80 +2,114 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RecoverPasswordRequest;
+use App\Http\Requests\RegisterRequest;
+use App\Mail\PasswordReset;
+use App\Mail\Welcome;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\ValidationException;
 use App\User;
+use Exception;
 
+/**
+ * Class AuthController
+ * @package App\Http\Controllers
+ */
 class AuthController extends Controller
 {
-    public function __construct()
+    /**
+     * @return JsonResponse
+     */
+    public function getUser()
     {
-        $this->middleware('cors');
+        return response()->json(Auth::user());
     }
 
     /**
-     * Login user and create token
+     * @param LoginRequest $request
      *
-     * @param  [string] email
-     * @param  [string] password
-     * @param  [boolean] remember_me
-     * @return [string] access_token
-     * @return [string] token_type
-     * @return [string] expires_at
+     * @return JsonResponse
      */
     public function login(Request $request)
     {
-        $request->validate([
-            'email' => 'required|string|email',
-            'password' => 'required|string',
-            'remember_me' => 'boolean'
-        ]);
+        $credentials = $request->only('email', 'password');
 
-        $credentials = request(['email', 'password']);
+        $token = Auth::attempt($credentials);
 
-        if(!Auth::attempt($credentials)) {
-            return response()->json(['message' => 'Unauthorized'], 401);
+        if (!$token) {
+            return response()->json([
+                'message' => 'Unauthorized'
+            ], 401);
         }
 
-        $user = $request->user();
-        $tokenResult = $user->createToken('Personal Access Token');
-        $token = $tokenResult->token;
+        return response()->json(['user' => Auth::user(), 'token' => $token]);
+    }
 
-        if ($request->remember_me) {
-            $token->expires_at = Carbon::now()->addWeeks(1);
+    /**
+     * @param RegisterRequest $request
+     *
+     * @return JsonResponse
+     */
+    public function register(Request $request)
+    {
+        $email = $request->input('email');
+        $password = $request->input('password');
+        $name = $request->input('name');
+
+        $user = User::createFromValues($name, $email, $password);
+
+        Mail::to($user)->send(new Welcome($user));
+
+        return response()->json(['message' => 'Account created. Please verify via email.']);
+    }
+
+    /**
+     * @param String $token
+     *
+     * @return Response
+     * @throws Exception
+     */
+    public function verify($token)
+    {
+        $user = User::verifyByToken($token);
+
+        if (!$user) {
+            return response()->json(['message' => 'Invalid verification token'], 400);
         }
 
-        $token->save();
-
-        return response()->json([
-            'access_token' => $tokenResult->accessToken,
-            'token_type'   => 'Bearer',
-            'expires_at'   => Carbon::parse($tokenResult->token->expires_at)->toDateTimeString()
-        ]);
+        return response()->json(['message' => 'Account has been verified']);
     }
-  
-    /**
-     * Logout user (Revoke the token)
-     *
-     * @return [string] message
-     */
-    public function logout(Request $request)
-    {
-        $request->user()->token()->revoke();
 
-        return response()->json([
-            'message' => 'Successfully logged out'
-        ]);
-    }
-  
     /**
-     * Get the authenticated User
-     *
-     * @return [json] user object
+     * @param Request $request
+     * @throws ValidationException
      */
-    public function user(Request $request)
+    public function forgotPassword(Request $request)
     {
-        return response()->json($request->user());
+        $this->validate($request, [
+            'email' => 'required|exists:users,email'
+        ]);
+
+        $user = User::byEmail($request->input('email'));
+
+        Mail::to($user)->send(new PasswordReset($user));
+    }
+
+    /**
+     * @param Request $request
+     * @param $token
+     * @throws ValidationException
+     */
+    public function recoverPassword(Request $request, $token)
+    {
+        $this->validate($request, [
+            'password' => 'required|min:8',
+        ]);
+
+        User::newPasswordByResetToken($token, $request->input('password'));
     }
 }
