@@ -20,6 +20,22 @@
     <div id="suggestions"></div>
     
     <!-- scripts -->
-    <script src="{{ asset('static/libs/iduffs@dev/autocomplete.js') }}" type="text/javascript" charset="utf-8"></script>
+    <script src="{{ asset('static/libs/3rdparty/flexsearch.compact.js') }}" type="text/javascript"></script>
+    <script src="{{ asset('static/libs/3rdparty/axios.min.js') }}" type="text/javascript"></script>
+    <script src="{{ asset('static/libs/iduffs@dev/autocomplete.js') }}" type="text/javascript"></script>
+
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            var ac = new IDUFFS.AutoComplete();
+        
+            ac.init({
+                group: 'computacao.ch'
+            }).done(function() {
+                console.log('DONE');
+            }).fail(function(error) {
+                console.log('FAIL', error);
+            });
+        });
+    </script>
 </body>
 </html>

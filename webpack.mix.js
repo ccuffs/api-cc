@@ -13,6 +13,3 @@ const mix = require('laravel-mix');
 
 // Coisas em geral
 mix.js('resources/js/app.js', 'public/static/libs/misc@dev');
-
-// IdUFFS
-mix.js('resources/js/libs/iduffs/autocomplete.js', 'public/static/libs/iduffs@dev');
