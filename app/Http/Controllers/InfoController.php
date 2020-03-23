@@ -17,6 +17,7 @@ class InfoController extends Controller
     {
         return response()->json([
             ['username' => 'fernando.bevilacqua', 'email' => 'fernando.bevilacqua@uffs.edu.br', 'name' => 'Fernando Bevilacqua'],
+            ['username' => 'bevilacqua', 'email' => 'fernando.bevilacqua@uffs.edu.br', 'name' => 'Fernando "Dovyski" Bevilacqua'],
             ['username' => 'lcaimi', 'email' => 'lcaimi@uffs.edu.br', 'name' => 'Luciano Lores Caimi'],
             ['username' => 'duarte', 'email' => 'duarte@uffs.edu.br', 'name' => 'Denio Duarte'],
         ]);
