@@ -1,4 +1,4 @@
 {
-    "/js/app.js": "/js/app.js",
-    "/css/app.css": "/css/app.css"
+    "/static/libs/iduffs@dev/autocomplete.js": "/static/libs/iduffs@dev/autocomplete.js",
+    "/static/libs/misc@dev/app.js": "/static/libs/misc@dev/app.js"
 }
