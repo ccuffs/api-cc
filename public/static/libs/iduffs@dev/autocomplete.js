@@ -15,12 +15,26 @@ IDUFFS.AutoComplete = function() {
         settings: {
             apiEndpoint: '/api-cc/public/',
             group: '',
-            maxSuggestions: 30,
+            maxSuggestions: 10,
             suggestionsContainerId: '',
-            onSuggestionsContainerClicked: null,
+            onSuggestionClicked: null,
+            onSuggestionHovered: null,
             onMostLikelySuggestion: null,
             onSuggestions: null,
             fillMostLikelySuggestionOnTab: false,
+            contentProperty: 'name',
+            filterEntryContent: function(entry) {
+                if(!entry) {
+                    return;
+                }
+                return entry[self.internal.settings.contentProperty || 'name'];
+            },
+            filterEntryValue: function(entry) {
+                if(!entry) {
+                    return;
+                }
+                return entry[self.internal.settings.contentProperty || 'name'];
+            },
             debug: false
         },
         initCallbacks: {
@@ -61,11 +75,11 @@ IDUFFS.AutoComplete = function() {
         },
 
         indexSearch: function(term) {
-            return this.index.search(term, 25);
+            return this.index.search(term, this.settings.maxSuggestions);
         },
 
-        indexInfo: function(key) {
-            return this.data[key] ? this.data[key].name : null;
+        indexGet: function(key) {
+            return this.data[key] ? this.data[key] : null;
         },
 
         showResults: function(value) {
@@ -81,14 +95,19 @@ IDUFFS.AutoComplete = function() {
                     this.suggestions.appendChild(entry);
                 }
 
-                entry.textContent = this.indexInfo(results[i]);
+                var indexEntry = this.indexGet(results[i]);
+                
+                entry.dataset.value = this.settings.filterEntryValue(indexEntry);
+                entry.dataset.key = results[i];
+                entry.dataset.raw = JSON.stringify(this.data[results[i]]);
+                entry.innerHTML = this.settings.filterEntryContent(indexEntry);
             }
 
             while (childs.length > len) {
                 this.suggestions.removeChild(childs[i])
             }
 
-            var firstResult = this.indexInfo(results[0]);
+            var firstResult = this.settings.filterEntryValue(this.indexGet(results[0]));
             var match = firstResult && firstResult.toLowerCase().indexOf(value.toLowerCase());
 
             if (firstResult && (match !== -1)) {
@@ -115,10 +134,22 @@ IDUFFS.AutoComplete = function() {
             }
         },
 
+        overSuggestion: function(event) {
+            var target = (event || window.event).target;
+
+            if(this.settings.onSuggestionHovered) {
+                this.settings.onSuggestionHovered(target);
+            }
+        },
+
         acceptSuggestion: function(event) {
             var target = (event || window.event).target;
 
-            self.internal.userInput.value = self.internal.autoComplete.value = target.textContent;
+            if(this.settings.onSuggestionClicked) {
+                this.settings.onSuggestionClicked(target);
+            }
+
+            self.internal.userInput.value = self.internal.autoComplete.value = (target.dataset.value || target.innerHTML);
 
             while (self.internal.suggestions.lastChild) {
                 self.internal.suggestions.removeChild(self.internal.suggestions.lastChild);
@@ -136,13 +167,15 @@ IDUFFS.AutoComplete = function() {
             this.userInput.addEventListener('input', function() {
                 self.showResults(this.value);
             }, true);
+
             this.userInput.addEventListener('keyup', this.acceptAutocomplete, true);
             
             if(!suggestions) {
                 return;
             }
             
-            this.suggestions.addEventListener('click', this.acceptSuggestion, true);
+            this.suggestions.addEventListener('click', function(event) { self.acceptSuggestion(event); }, true);
+            this.suggestions.addEventListener('mouseover', function(event) { self.overSuggestion(event); }, true);
         },
 
         boot: function() {
