@@ -15,7 +15,6 @@
     <p>Essa página mostra o funcionamento básico de várias libs vinculadas à API.</p>
 
     <h2>AutoComplete</h2>
-    <input type="text" id="autocomplete">
     <input type="text" id="userinput" placeholder="Search by movie title ...">
     <div id="suggestions"></div>
     
@@ -25,11 +24,33 @@
     <script src="{{ asset('static/libs/iduffs@dev/autocomplete.js') }}" type="text/javascript"></script>
 
     <script type="text/javascript">
+        function onMostLikelySuggestion(entry) {
+            if(!entry) {
+                return;
+            }
+
+            console.log('onMostLikelySuggestion: ', entry);
+        }
+
+        function onSuggestions(entries) {
+            console.log('onMostLikelySuggestion: ', entries);
+        }
+
+        function onSuggestionsContainerClicked(entry) {
+            console.log('onSuggestionsContainerClicked: ', entry);
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             var ac = new IDUFFS.AutoComplete();
         
             ac.init({
-                group: 'computacao.ch'
+                group: 'computacao.ch',
+                maxSuggestions: 30,
+                suggestionsContainerId: 'suggestions',
+                onSuggestionsContainerClicked: onSuggestionsContainerClicked,
+                onMostLikelySuggestion: onMostLikelySuggestion,
+                onSuggestions: onSuggestions,
+
             }).done(function() {
                 console.log('DONE');
             }).fail(function(error) {
