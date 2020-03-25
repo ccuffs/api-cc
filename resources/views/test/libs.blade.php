@@ -21,25 +21,10 @@
     <!-- scripts -->
     <script src="{{ asset('static/libs/3rdparty/flexsearch.compact.js') }}" type="text/javascript"></script>
     <script src="{{ asset('static/libs/3rdparty/axios.min.js') }}" type="text/javascript"></script>
+    <script src="{{ asset('static/libs/3rdparty/signals.min.js') }}" type="text/javascript"></script>
     <script src="{{ asset('static/libs/iduffs@dev/autocomplete.js') }}" type="text/javascript"></script>
 
     <script type="text/javascript">
-        function onMostLikelySuggestion(entry) {
-            if(!entry) {
-                return;
-            }
-
-            console.log('onMostLikelySuggestion: ', entry);
-        }
-
-        function onSuggestions(entries) {
-            console.log('onMostLikelySuggestion: ', entries);
-        }
-
-        function onSuggestionsContainerClicked(entry) {
-            console.log('onSuggestionsContainerClicked: ', entry);
-        }
-
         document.addEventListener('DOMContentLoaded', function() {
             var ac = new IDUFFS.AutoComplete();
         
@@ -47,15 +32,21 @@
                 group: 'computacao.ch',
                 maxSuggestions: 30,
                 suggestionsContainerId: 'suggestions',
-                onSuggestionsContainerClicked: onSuggestionsContainerClicked,
-                onMostLikelySuggestion: onMostLikelySuggestion,
-                onSuggestions: onSuggestions,
+                inputId: 'userinput',
 
-            }).done(function() {
-                console.log('DONE');
+            }).done(function(data) {
+                console.log('Autocomplete está pronto. Elementos no indice: ' + data.length);
+
             }).fail(function(error) {
-                console.log('FAIL', error);
+                console.log('Falha ao inicializar autocomplete: ', error);
             });
+
+            ac.signals.clicked.add(function(entry) { console.log('clicked: ', entry); });
+            ac.signals.hovered.add(function(entry) { console.log('hovered: ', entry); });
+            ac.signals.added.add(function(el) { console.log('added: ', el); });
+            ac.signals.removed.add(function(entry) { console.log('removed: ', entry); });
+            ac.signals.fetched.add(function(keys) { console.log('fetched: ', keys); });
+            ac.signals.hinted.add(function(entry) { console.log('hinted: ', entry); });
         });
     </script>
 </body>

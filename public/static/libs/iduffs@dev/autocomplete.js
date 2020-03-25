@@ -17,24 +17,8 @@ IDUFFS.AutoComplete = function() {
             group: '',
             maxSuggestions: 10,
             suggestionsContainerId: '',
-            onSuggestionClicked: null,
-            onSuggestionHovered: null,
-            onMostLikelySuggestion: null,
-            onSuggestions: null,
-            fillMostLikelySuggestionOnTab: false,
+            inputId: '',
             contentProperty: 'name',
-            filterEntryContent: function(entry) {
-                if(!entry) {
-                    return;
-                }
-                return entry[self.internal.settings.contentProperty || 'name'];
-            },
-            filterEntryValue: function(entry) {
-                if(!entry) {
-                    return;
-                }
-                return entry[self.internal.settings.contentProperty || 'name'];
-            },
             debug: false
         },
         initCallbacks: {
@@ -66,9 +50,9 @@ IDUFFS.AutoComplete = function() {
                 console.warn('Index is empty.');
                 return;
             }
-
+ 
             for (var i = 0; i < data.length; i++) {
-                this.index.add(i, data[i].name);
+                this.index.add(i, this.external.filters.value(data[i]));
             }
 
             this.data = data;
@@ -80,6 +64,15 @@ IDUFFS.AutoComplete = function() {
 
         indexGet: function(key) {
             return this.data[key] ? this.data[key] : null;
+        },
+
+        updateDomElementData: function(el, key) {
+            var entry = this.indexGet(key);
+                
+            el.dataset.key = key;
+            el.dataset.value = this.external.filters.value(entry);
+            el.dataset.raw = JSON.stringify(entry);
+            el.innerHTML = this.external.filters.content(entry);
         },
 
         showResults: function(value) {
@@ -95,64 +88,62 @@ IDUFFS.AutoComplete = function() {
                     this.suggestions.appendChild(entry);
                 }
 
-                var indexEntry = this.indexGet(results[i]);
-                
-                entry.dataset.value = this.settings.filterEntryValue(indexEntry);
-                entry.dataset.key = results[i];
-                entry.dataset.raw = JSON.stringify(this.data[results[i]]);
-                entry.innerHTML = this.settings.filterEntryContent(indexEntry);
+                this.updateDomElementData(entry, results[i]);
+                this.external.signals.added.dispatch(entry);
             }
 
             while (childs.length > len) {
-                this.suggestions.removeChild(childs[i])
+                this.suggestions.removeChild(childs[i]);
+                this.external.signals.removed.dispatch(childs[i]);
             }
 
-            var firstResult = this.settings.filterEntryValue(this.indexGet(results[0]));
+            var keyFirstResult = results[0];
+            var firstResult = this.external.filters.value(this.indexGet(keyFirstResult));
             var match = firstResult && firstResult.toLowerCase().indexOf(value.toLowerCase());
 
             if (firstResult && (match !== -1)) {
                 this.autoComplete.value = value + firstResult.substring(match + value.length);
                 this.autoComplete.current = firstResult;
-                this.autoComplete.key = results[0];
+                this.autoComplete.key = keyFirstResult;
             } else {
                 this.autoComplete.value = this.autoComplete.current = value;
                 this.autoComplete.key = null;
             }
 
-            this.signalOnMostLikelySuggestion(this.autoComplete);
+            this.issueSignals(this.autoComplete, results);
         },
 
-        signalOnMostLikelySuggestion: function(autoComplete) {
-            if(this.settings.onMostLikelySuggestion && autoComplete.key !== null) {
-                this.settings.onMostLikelySuggestion(autoComplete.current);
+        issueSignals: function(autoComplete, results) {
+            if(autoComplete.key !== null) {
+                this.external.signals.hinted.dispatch(autoComplete.current);
             }
+
+            this.external.signals.fetched.dispatch(results);
         },
 
         acceptAutocomplete: function(event) {
+            var autoComplete = self.internal.autoComplete;
+
             if ((event || window.event).keyCode === 13) {
-                this.value = self.internal.autoComplete.value = self.internal.autoComplete.current;
+                this.value = autoComplete.value = autoComplete.current;
             }
         },
 
         overSuggestion: function(event) {
             var target = (event || window.event).target;
-
-            if(this.settings.onSuggestionHovered) {
-                this.settings.onSuggestionHovered(target);
-            }
+            this.external.signals.hovered.dispatch(target);
         },
 
         acceptSuggestion: function(event) {
             var target = (event || window.event).target;
+            var suggestions = this.suggestions;
 
-            if(this.settings.onSuggestionClicked) {
-                this.settings.onSuggestionClicked(target);
-            }
+            this.external.signals.clicked.dispatch(target);
+            this.userInput.value = this.autoComplete.value = (target.dataset.value || target.innerHTML);
 
-            self.internal.userInput.value = self.internal.autoComplete.value = (target.dataset.value || target.innerHTML);
-
-            while (self.internal.suggestions.lastChild) {
-                self.internal.suggestions.removeChild(self.internal.suggestions.lastChild);
+            while (suggestions.lastChild) {
+                this.external.signals.removed.dispatch(suggestions.lastChild);
+                suggestions.removeChild(suggestions.lastChild);
             }
 
             return false;
@@ -161,15 +152,17 @@ IDUFFS.AutoComplete = function() {
         initDOMElements: function() {
             var self = this;
 
-            this.suggestions = document.getElementById('suggestions');
-            this.userInput = document.getElementById('userinput');
+            this.userInput = document.getElementById(this.settings.inputId);
 
-            this.userInput.addEventListener('input', function() {
-                self.showResults(this.value);
-            }, true);
-
+            if(!this.userInput) {
+                throw Error('Unable to get element using provided inputId: '+this.settings.inputId);
+            }
+            
+            this.userInput.addEventListener('input', function() { self.showResults(this.value);}, true);
             this.userInput.addEventListener('keyup', this.acceptAutocomplete, true);
             
+            this.suggestions = document.getElementById(this.settings.suggestionsContainerId);
+
             if(!suggestions) {
                 return;
             }
@@ -186,21 +179,54 @@ IDUFFS.AutoComplete = function() {
                 self.initDOMElements();
 
                 if (self.initCallbacks.done) {
-                    self.initCallbacks.done();
+                    self.initCallbacks.done(self.data);
                 }
+                self.external.signals.done.dispatch(self.data);
+
             }).catch(function(error) {
                 if (self.initCallbacks.fail) {
                     self.initCallbacks.fail(error);
                 }
+                self.external.signals.fail.dispatch(error);
             });
         },
 
         initSettings: function(initParams) {
+            if(!initParams) {
+                return;
+            }
+
             for(var prop in this.settings) {
                 if(initParams[prop] !== undefined) {
                     this.settings[prop] = initParams[prop];
                 }
             }
+        },
+    };
+
+    this.signals = {
+        clicked: new signals.Signal(),
+        hovered: new signals.Signal(),
+        added: new signals.Signal(),
+        removed: new signals.Signal(),
+        fetched: new signals.Signal(),
+        hinted: new signals.Signal(),
+        done: new signals.Signal(),
+        fail: new signals.Signal(),
+    };
+
+    this.filters = {
+        content: function(entry) {
+            if(!entry) {
+                return;
+            }
+            return entry[self.internal.settings.contentProperty || 'name'];
+        },
+        value: function(entry) {
+            if(!entry) {
+                return;
+            }
+            return entry[self.internal.settings.contentProperty || 'name'];
         },
     };
 
@@ -215,7 +241,6 @@ IDUFFS.AutoComplete = function() {
             },
 
             fail: function(failCallback) {
-
                 initCallbacks.fail = failCallback;
                 return initStructure;
             },
