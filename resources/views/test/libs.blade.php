@@ -19,10 +19,10 @@
     <div id="suggestions"></div>
     
     <!-- scripts -->
-    <script src="{{ asset('static/libs/3rdparty/flexsearch.compact.js') }}" type="text/javascript"></script>
-    <script src="{{ asset('static/libs/3rdparty/axios.min.js') }}" type="text/javascript"></script>
-    <script src="{{ asset('static/libs/3rdparty/signals.min.js') }}" type="text/javascript"></script>
-    <script src="{{ asset('static/libs/iduffs@dev/autocomplete.js') }}" type="text/javascript"></script>
+    <script src="{{ asset('libs/3rdparty/flexsearch.compact.js') }}" type="text/javascript"></script>
+    <script src="{{ asset('libs/3rdparty/axios.min.js') }}" type="text/javascript"></script>
+    <script src="{{ asset('libs/3rdparty/signals.min.js') }}" type="text/javascript"></script>
+    <script src="{{ asset('libs/iduffs@dev/autocomplete.js') }}" type="text/javascript"></script>
 
     <script type="text/javascript">
         document.addEventListener('DOMContentLoaded', function() {
