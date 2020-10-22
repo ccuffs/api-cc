@@ -13,13 +13,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Misc
-Route::get('/info/users', 'InfoController@users')->name('info.users');
-
-if (App::environment('local')) {
-    Route::get('/test', 'TestController@index');
-}
-
 Route::get('/', function () {
     return view('welcome');
 });

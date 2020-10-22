@@ -3,7 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
-use App\Extensions\Authentication\PasetoAuthGuard;
+use Illuminate\Support\Facades\Gate;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -13,7 +13,7 @@ class AuthServiceProvider extends ServiceProvider
      * @var array
      */
     protected $policies = [
-        // 'App\Model' => 'App\Policies\ModelPolicy',
+        // 'App\Models\Model' => 'App\Policies\ModelPolicy',
     ];
 
     /**
@@ -25,16 +25,6 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
-        $this->app['auth']->extend('paseto', function ($app, $name, array $config) {
-
-            $guard = new PasetoAuthGuard(
-                $app['auth']->createUserProvider($config['provider']),
-                $app['request']
-            );
-
-            $app->refresh('request', $guard, 'setRequest');
-
-            return $guard;
-        });
+        //
     }
 }
