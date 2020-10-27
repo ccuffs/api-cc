@@ -13,7 +13,11 @@ class Auth extends Controller
      * @return void
      */
     public function __construct() {
-        $this->middleware('auth:sanctum');
+        // This controller is open to the inter-webz.
+    }
+
+    private function generatePassport() {
+        return '';
     }
 
     /**
@@ -24,8 +28,35 @@ class Auth extends Controller
      */
     public function index(Request $request)
     {
-        //dd($request->user());
-        $items = [];
-        return $items;
+        $this->validate($request, [
+            'user' => 'required',
+            'password' => 'required',
+        ]);
+
+        $input = $request->all();
+        $auth = new \CCUFFS\Auth\AuthIdUFFS();
+        $info = $auth->login($input);
+
+        if($info === null) {
+            return response()->json([
+                'message' => 'Usuário ou senha incorretos',
+                'errors' => [
+                    'general' => ['Provided user or password is invalid']
+                ]
+            ]);
+        }
+
+        return response()->json([
+            'token' => $info->token_id,
+            'passport' => $this->generatePassport(),
+            'user' => [
+                'name' => ucwords(strtolower($info->name)),
+                'email' => $info->email,
+                'username' => $info->username,
+                'cpf' => $info->cpf,
+                'uid' => $info->uid,
+                'pessoa_id' => $info->pessoa_id
+            ]
+        ]);
     }
 }
