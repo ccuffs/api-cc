@@ -1,0 +1,27 @@
+name: deploy
+on: push
+env:
+  PROD_HOST: api.uffs.cc
+  PROD_WEB_DIRECTORY: /home/ccuffsapi/api.uffs.cc
+  COMPOSER_BIN: php-7.3 ~/.php/composer/composer
+  PHP_BIN: php-7.3
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Prepare deploy server
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ env.PROD_HOST }}
+        username: ${{ secrets.PROD_USERNAME }}
+        password: ${{ secrets.PROD_PASSWORD }}
+        script: |
+          cd ${{ env.PROD_WEB_DIRECTORY }}
+          git pull
+          ${{ env.COMPOSER_BIN }} install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist
+          ${{ env.PHP_BIN }} artisan migrate
+          ${{ env.PHP_BIN }} artisan db:seed
+          npm install
+          npm run production
