@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use App\Models\Team;
 
 class CreateApp extends Command
 {
@@ -56,6 +57,9 @@ class CreateApp extends Command
         ]);
         
         $user->save();
+        $app_team = Team::where('name', 'apps')->first();
+        $user->ownedTeams()->save($app_team);
+
         $this->info('Aplicação criada com sucesso!');
 
         return 0;
