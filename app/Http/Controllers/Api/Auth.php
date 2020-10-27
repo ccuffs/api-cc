@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
+use \Firebase\JWT\JWT;
 use App\Http\Controllers\Controller;
 
 class Auth extends Controller
@@ -16,8 +17,19 @@ class Auth extends Controller
         // This controller is open to the inter-webz.
     }
 
-    private function generatePassport() {
-        return '';
+    private function generatePassport($uid, $email) {
+        $ttl_days = 7 * 24 * 60 * 60; // TODO: add config for this
+        $key = config('app.key');
+        $payload = array(
+            'uid' => $uid,
+            'email' => $email,
+            'iss' => 'https://api.uffs.cc',
+            'iat' => time(),
+            'exp' => time() + $ttl_days
+        );
+
+        $jwt = JWT::encode($payload, $key);
+        return $jwt;
     }
 
     /**
@@ -48,7 +60,7 @@ class Auth extends Controller
 
         return response()->json([
             'token' => $info->token_id,
-            'passport' => $this->generatePassport(),
+            'passport' => $this->generatePassport($info->uid, $info->email),
             'user' => [
                 'name' => ucwords(strtolower($info->name)),
                 'email' => $info->email,
