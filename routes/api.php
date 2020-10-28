@@ -16,9 +16,9 @@ use App\Http\Controllers\Api\Historico;
 |
 */
 
-// Experimental API endpoints
-Route::post('/v0/auth', [Auth::class, 'index']);
-Route::get('/v0/historico', [Historico::class, 'index']);
+// API endpoints
+Route::post('/auth', [Auth::class, 'index']);
+Route::get('/historico', [Historico::class, 'index']);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
