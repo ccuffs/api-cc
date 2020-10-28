@@ -18,7 +18,7 @@ A API possui diversos endpoints disponíveis, todos acessíveis através de um p
 https://api.uffs.cc/v0/teste
 ```
 
-A versão estável da API está disponível no prefixo `v1`, enquanto a versão experimental (que pode mudar a qualquer momento), está disponível no prefixo `v0`.
+A versão estável da API estará disponível no prefixo `v1`, enquanto a versão experimental (que pode mudar a qualquer momento), está disponível no prefixo `v0`.
 
 Com exceção do enpoint `auth`, todos os endpoints precisam de uma chave de autenticação enviada através do seguinte cabeçalho HTTP:
 
@@ -33,23 +33,17 @@ Abaixo está um exemplo de requisição para o endpoint `v0/ping` utilizando a c
 curl -H 'Accept: application/json' -H "Authorization: Bearer c08cbbfd6eefc83ac6d23c4c791277e4" https://api.uffs.cc/v0/ping
 ```
 
+Para os endpoints que não necessitam do token, basta enviar os parâmetros:
+
+```bash
+curl -H 'Accept: application/json' -d "user=meuiduffsaqui&password=minhasenhaaqui" http://api.uffs.cc/v0/auth
+```
+
 ### Endpoints
 
-#### Autenticação `/auth`
-
-Autentica um usuário utilizando o idUFFS (e sua senha).
-
-```bash
-curl -H 'Accept: application/json' -H "Authorization: Bearer 122" -d "user=meuiduffsaqui&password=minhasenhaaqui" http://api.uffs.cc/v0/auth
-```
-
-#### Histórico `/historico`
-
-Obtém informações do histórico escolar da graduação de um aluno.
-
-```bash
-curl -H 'Accept: application/json' -H "Authorization: Bearer 122" -d "passport=..." http://api.uffs.cc/v0/historico
-```
+| Verbo |   URL  | Parâmetros | Retorno | Informação |
+|-------|:-------|:-----------|:--------|:-----------|
+| `POST`| [/auth](http://api.uffs.cc/v0/auth) | `user` (string, idUFFS do usuário)<br>`password` (string) | `token` (string JWT)<br>`passport` (string JWT)<br>`user` (objeto) | Autentica um usuário utilizando o idUFFS (e sua senha). Não exige token. O campo `token` do retorno deve ser salvo e utilizado para chamadas subsequentes aos endpoints através do `Authorization: Bearer XXX`, onde `XXX` é o valor de `token`. O campo `passport` do retorno deve ser salvo e utilizado como _parâmetro_ em todas chamadas subsequentes a endpoints que retornem dados pessoais ou façam qualquer alteração, ex. histórico escolar.|
 
 ## Desenvolvimento
 
