@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 
 class Disciplinas extends Controller
@@ -36,7 +36,62 @@ class Disciplinas extends Controller
         }
 
         return $available;
-    }    
+    }
+
+    protected function findCourseHistory($id) {
+        $stats = DB::connection('dados_uffs')->select("
+        SELECT
+            sit_turma,
+            COUNT(sit_turma) qtd_sit_turma,
+            AVG(media_final) avg_media_final,
+            AVG(freq_turma) avg_freq_turma,
+            ano,
+            semestre,
+            cod_uffs,
+            cod_ccr,
+            nome_ccr,
+            lista_docentes_ch,
+            data_atualizacao
+        FROM
+            'graduacao_historico/graduacao_historico' as h
+        WHERE
+            cod_ccr = ?
+        GROUP BY
+            ano, semestre, sit_turma
+        ", [$id]);
+
+        $dataset_fields = [
+            'sit_turma',
+            'qtd_sit_turma',
+            'avg_media_final',
+            'avg_freq_turma'
+        ];
+
+        $info = [
+            'lista' => $stats,
+            'datasets' => []
+        ];
+
+        foreach($stats as $stat) {
+            $stat->lista_docentes_ch = json_decode($stat->lista_docentes_ch);
+
+            $date = $stat->ano . '-' . $stat->semestre;
+
+            if(!isset($info['datasets'][$date])) {
+                $info['datasets'][$date] = [];
+            }
+
+            foreach($dataset_fields as $field) {
+                if(!isset($info['datasets'][$date][$field])) {
+                    $info['datasets'][$date][$field] = [];
+                }
+
+                $info['datasets'][$date][$field][] = $stat->$field == null ? 0 : $stat->$field;
+            }
+        }
+
+        return $info;
+    }
 
     /**
      * 
@@ -61,9 +116,12 @@ class Disciplinas extends Controller
         $course_path = $available_course_files[$normalized_id];
         $course = json_decode(file_get_contents($course_path), true);
 
+        $history = $this->findCourseHistory($id);
+        $course['historico'] = $history;
+
         ksort($course);
 
-        return $course;
+        return response()->json($course, 200, [], JSON_NUMERIC_CHECK);
     }
 
     /**
