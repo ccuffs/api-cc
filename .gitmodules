@@ -1,0 +1,3 @@
+[submodule "database/external/disciplinas"]
+	path = database/external/disciplinas
+	url = https://github.com/ccuffs/disciplinas.git
