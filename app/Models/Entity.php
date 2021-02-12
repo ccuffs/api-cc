@@ -7,11 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use betterapp\LaravelDbEncrypter\Traits\EncryptableDbAttribute;
 
-class ScrapingCredential extends Model
+class Entity extends Model
 {
     use HasFactory;
     use Notifiable;
-    use EncryptableDbAttribute;
 
     /**
      * The attributes that are mass assignable.
@@ -20,18 +19,10 @@ class ScrapingCredential extends Model
      */
     protected $fillable = [
         'id',
-        'target',
-        'actor',
-        'access_user',
-        'access_password'
-    ];
-
-    /**
-     * The attributes that should be encrypted/decrypted to/from db.
-     */
-    protected $encryptable = [
-        'access_user',
-        'access_password'
+        'eid',
+        'name',
+        'type',
+        'data'
     ];
 
     /**
@@ -40,8 +31,6 @@ class ScrapingCredential extends Model
      * @var array
      */
     protected $hidden = [
-        'access_user',
-        'access_password'
     ];
 
     /**
@@ -51,4 +40,24 @@ class ScrapingCredential extends Model
      */
     protected $casts = [
     ];
+
+    /**
+     * 
+     */
+    public function scrapers()
+    {
+        return $this->belongsToMany(Scraper::class, 'entities_scrapers', 'entity_id', 'scraper_id');
+    }
+
+    /**
+     * Retrieve the model for a bound value.
+     *
+     * @param  mixed  $value
+     * @param  string|null  $field
+     * @return \Illuminate\Database\Eloquent\Model|null
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        return $this->where('eid', $value)->firstOrFail();
+    }    
 }

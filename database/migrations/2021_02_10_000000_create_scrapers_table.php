@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateScrapingCredentialsTable extends Migration
+class CreateScrapersTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreateScrapingCredentialsTable extends Migration
      */
     public function up()
     {
-        Schema::create('scraping_credentials', function (Blueprint $table) {
+        Schema::create('scrapers', function (Blueprint $table) {
             $table->id();
             $table->string('target', 32)->index();
             $table->string('actor', 100)->index();
@@ -30,6 +30,6 @@ class CreateScrapingCredentialsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('scraping_credentials');
+        Schema::dropIfExists('scrapers');
     }
 }

@@ -2,19 +2,17 @@
 
 namespace App\Console\Commands;
 
-use App\Models\ScrapingCredential;
+use App\Models\Scraper;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Hash;
-use App\Models\User;
 
-class UpdateScrap extends Command
+class UpdateScraper extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'scrap:update';
+    protected $signature = 'scraper:update';
 
     /**
      * The console command description.
@@ -40,14 +38,14 @@ class UpdateScrap extends Command
      */
     public function handle()
     {
-        $this->info('Atualização de scrap');
+        $this->info('Atualização de scraper');
         
-        $actor = $this->ask('Ator do scrap');
+        $actor = $this->ask('Ator do scraper');
 
-        $credential = ScrapingCredential::where('actor', $actor)->first();
+        $credential = Scraper::where('actor', $actor)->first();
 
         if ($credential == null) {
-            $this->error('Scrap não encontrado com ator: ' . $actor);
+            $this->error('Scraper não encontrado com ator: ' . $actor);
             return 1;
         }
 
@@ -81,7 +79,7 @@ class UpdateScrap extends Command
 
         if($credential->isDirty()) {
             $credential->save();
-            $this->info('Scrap atualizado com sucesso!');
+            $this->info('Scraper atualizado com sucesso!');
         } else {
             $this->line('Nada a ser atualizado, pelo visto.');
         }

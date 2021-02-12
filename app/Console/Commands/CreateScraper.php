@@ -2,20 +2,17 @@
 
 namespace App\Console\Commands;
 
-use App\Models\ScrapingCredential;
+use App\Models\Scraper;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Hash;
-use App\Models\User;
-use App\Models\Team;
 
-class CreateScrap extends Command
+class CreateScraper extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'scrap:create';
+    protected $signature = 'scraper:create';
 
     /**
      * The console command description.
@@ -48,13 +45,13 @@ class CreateScrap extends Command
         $access_user = $this->ask('Usuário de acesso');
         $access_password = $this->secret('Senha do usuário de acesso');
 
-        $this->line(" Scrap:\n  target = $target\n  actor = $actor\n  access_user = $access_user");
+        $this->line(" Scraper:\n  target = $target\n  actor = $actor\n  access_user = $access_user");
 
         if (!$this->confirm('Confirma criação?')) {
             return 1;
         }
 
-        $credential = ScrapingCredential::create([
+        $credential = Scraper::create([
             'id' => null,
             'target' => $target,
             'actor' => $actor,
@@ -62,7 +59,7 @@ class CreateScrap extends Command
             'access_password' => $access_password
         ]);
 
-        $this->info('Scrap criado com sucesso!');
+        $this->info('Scraper criado com sucesso!');
 
         return 0;
     }
