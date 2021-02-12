@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Entity;
+use App\Support\Facades\SgaScraper;
 
 class Aluno extends Controller
 {
@@ -25,6 +26,12 @@ class Aluno extends Controller
      */
     public function index(Entity $entity)
     {
-        return response()->json($entity, 200, [], JSON_NUMERIC_CHECK);
+        $credenciais = [
+            'usuario' => '',
+            'senha' => '',
+        ];
+        $alunos = SgaScraper::usando($credenciais)->alunos()->get();
+
+        return response()->json($alunos, 200, [], JSON_NUMERIC_CHECK);
     }
 }

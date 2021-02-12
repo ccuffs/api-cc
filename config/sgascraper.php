@@ -10,6 +10,15 @@ return [
     | 
     |
     */
+    'bin' => env('UFFS_SGA_SCRAPER_BIN', 'node ' . '"' . base_path('cli/uffs-sga-scraping/main.js') . '"'),
 
-    'bin' => env('UFFS_SGA_SCRAPER_BIN', ''),
+    /*
+    |--------------------------------------------------------------------------
+    | 
+    |--------------------------------------------------------------------------
+    |
+    | 
+    |
+    */
+    'config_path' => env('UFFS_SGA_SCRAPER_CONFIG_PATH', base_path('cli/uffs-sga-scraping/config.json')),
 ];

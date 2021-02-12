@@ -2,6 +2,7 @@
 
 namespace App\Cli;
 
+use Exception;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -17,37 +18,53 @@ class SgaScraper
         $this->config = $config;
     }
 
-    protected function runCli(array $args = [])
+    protected function runCli($args = '')
     {
-        $output = null;
-        $code = null;
-        
-        exec('whoami', $output, $code);
+        $output = [];
+        $code = -1;
+        $sga = $this->config['bin'];
+        $configPath = $this->config['config_path'];
+        $cmd = "$sga $args --config=\"$configPath\"";
 
-        return collect($output);
+        exec($cmd, $output, $code);
+
+        if ($code != 0) {
+            throw new \Exception("Error running sgascrapper (code $code): " . implode("\n", $output));
+        }
+
+        return json_decode(implode('', $output));
     }
 
     protected function runRequests($requests)
     {
         if (count($requests) == 0 || !isset($requests['pedidos'])) {
-            throw 'Lista de comandos está vazia. Use sga()->usando()->...->get()';
+            throw  new \Exception('Lista de comandos está vazia. Use sga()->usando()->...->get()');
         }
 
         if (!isset($requests['credenciais'])) {
-            throw 'Credenciais de acesso não informadas. Use sga()->usando()->...';
+            throw new \Exception('Credenciais de acesso não informadas. Use sga()->usando()->...');
         }
 
-        $this->runCli();
+        $args = '';
+
+        foreach($requests['credenciais'] as $key => $value) {
+            $args .= "--$key=\"$value\" ";
+        }
+
+        $args .= implode(' ', $requests['pedidos']);
+
+        $result = $this->runCli($args);
+        return collect($result);
     }
 
     public function usando(array $credenciais)
     {
-        if (!isset($credenciais['usuario'])) {
-            throw 'Nenhum usuário informado nas credenciais.';
+        if (!isset($credenciais['usuario']) || empty($credenciais['usuario'])) {
+            throw  new \Exception('Nenhum usuário informado nas credenciais. Use sga()->usando(["usuario" => "...", "senha" => "..."])');
         }
 
-        if (!isset($credenciais['senha'])) {
-            throw 'Nenhuma senha informada nas credenciais.';
+        if (!isset($credenciais['senha']) || empty($credenciais['senha'])) {
+            throw  new \Exception('Nenhuma senha informada nas credenciais. Use sga()->usando(["usuario" => "...", "senha" => "..."])');
         }
 
         $this->requests['credenciais'] = [
