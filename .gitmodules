@@ -1,3 +1,6 @@
 [submodule "database/external/disciplinas"]
 	path = database/external/disciplinas
 	url = https://github.com/ccuffs/disciplinas.git
+[submodule "cli/uffs-sga-scraping"]
+	path = cli/uffs-sga-scraping
+	url = https://github.com/ccuffs/uffs-sga-scraping

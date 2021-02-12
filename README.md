@@ -73,7 +73,7 @@ Feito a instalação das dependências, é necessário obter uma cópia do proje
 Para isso, rode:
 
 ```
-git clone https://github.com/ccuffs/api.uffs.cc && cd api.uffs.cc
+git clone --recurse-submodules https://github.com/ccuffs/api.uffs.cc && cd api.uffs.cc
 ```
 
 Isso criará e trocará para a pasta `api.uffs.cc` com o código do projeto.
