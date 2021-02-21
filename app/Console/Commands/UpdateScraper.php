@@ -52,10 +52,6 @@ class UpdateScraper extends Command
         $this->info('Scrap:');
         $this->info($credential);
 
-        $new_name = $this->ask('Nome da aplicação [enter para manter igual]');
-        $new_email = $this->ask('E-mail da aplicação [enter para manter igual]');
-        $new_password = $this->secret('Senha da aplicação [enter para manter igual]');
-
         $new_target = $this->ask('Target [enter para manter igual]');
         $new_actor = $this->ask('Ator [enter para manter igual]');
         $new_access_user = $this->ask('Usuário de acesso [enter para manter igual]');
