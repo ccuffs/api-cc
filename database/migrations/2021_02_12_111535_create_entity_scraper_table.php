@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateEntitiesScrapersTable extends Migration
+class CreateEntityScraperTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreateEntitiesScrapersTable extends Migration
      */
     public function up()
     {
-        Schema::create('entities_scrapers', function (Blueprint $table) {
+        Schema::create('entity_scraper', function (Blueprint $table) {
             $table->id();
             $table->foreignId('entity_id')->references('id')->on('entities')->onDelete('cascade');
             $table->foreignId('scraper_id')->references('id')->on('scrapers')->onDelete('cascade');
@@ -28,6 +28,6 @@ class CreateEntitiesScrapersTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('entities_scrapers');
+        Schema::dropIfExists('entity_scraper');
     }
 }

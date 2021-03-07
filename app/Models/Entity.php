@@ -46,7 +46,7 @@ class Entity extends Model
      */
     public function scrapers()
     {
-        return $this->belongsToMany(Scraper::class, 'entities_scrapers', 'entity_id', 'scraper_id')->withTimestamps();
+        return $this->belongsToMany(Scraper::class)->withTimestamps();
     }
 
     /**
