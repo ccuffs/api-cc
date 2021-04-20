@@ -21,12 +21,23 @@ use App\Http\Controllers\Api\Disciplinas;
 
 // API endpoints
 Route::post('/auth', [Auth::class, 'index']);
-Route::get('/disciplinas', [Disciplinas::class, 'index']);
-Route::get('/disciplinas/{codigo}', [Disciplinas::class, 'get']);
-Route::get('/historico', [Historico::class, 'index']);
-Route::get('/alunos/{entity}', [Aluno::class, 'index']);
-Route::get('/cursos/{iduffs}/alunos', [Curso::class, 'alunos']);
-Route::get('/cursos/{iduffs}/alunos/{matricula}', [Curso::class, 'aluno']);
+
+// Informações sobre disciplinas
+Route::get('/disciplinas', [Disciplinas::class, 'lista']);
+Route::get('/disciplinas/codigos', [Disciplinas::class, 'codigos']);
+Route::get('/disciplinas/{codigo}', [Disciplinas::class, 'info']);
+
+Route::middleware(['auth:sanctum'])->group(function () {
+    // Informações de cada aluno (histórico, etc)
+    Route::get('/alunos/{entity}/historico', [Aluno::class, 'index']);
+    Route::get('/alunos/{entity}', [Aluno::class, 'index']);
+
+    // Informações sobre grupos de alunos (cursos, grupos, etc)
+    Route::get('/cursos/{iduffs}/alunos', [Curso::class, 'alunos']);
+
+    // Informações sobre servidores da UFFS
+    Route::get('/servidores/busca', [Servidores::class, 'busca']);
+});
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
