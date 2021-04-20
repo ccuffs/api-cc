@@ -8,57 +8,48 @@ use App\Http\Controllers\Controller;
 
 class Disciplinas extends Controller
 {
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct() {
-        // This controller is open to the inter-webz.
-    }
-
-    protected function findAvailableCourseFiles()
+    protected function findArquivosDisciplinasDisponiveis()
     {
-        $origin_path = 'database/external/disciplinas/json';
-        $directory = base_path($origin_path);
-        $available = [];
+        $pathInicial = 'database/external/disciplinas/json';
+        $diretorio = base_path($pathInicial);
+        $disponivel = [];
 
-        $folders = array_diff(scandir($directory), array('..', '.'));
+        $pastas = array_diff(scandir($diretorio), array('..', '.'));
 
-        foreach($folders as $folder) {
-            $path = $directory . DIRECTORY_SEPARATOR . $folder;
+        foreach($pastas as $folder) {
+            $path = $diretorio . DIRECTORY_SEPARATOR . $folder;
             $files = array_diff(scandir($path), array('..', '.'));
 
-            foreach($files as $course_file) {
-                $course_id = basename($course_file, '.json');
-                $available[$course_id] = $path . DIRECTORY_SEPARATOR . $course_file;
+            foreach($files as $arquivoDisciplina) {
+                $idDisciplina = basename($arquivoDisciplina, '.json');
+                $disponivel[$idDisciplina] = $path . DIRECTORY_SEPARATOR . $arquivoDisciplina;
             }
         }
 
-        return $available;
+        return $disponivel;
     }
 
-    protected function findCourseHistory($id) {
+    protected function findHistoricoDisciplina($codigo) {
         $stats = DB::connection('dados_uffs')->select("
-        SELECT
-            sit_turma,
-            COUNT(sit_turma) qtd_sit_turma,
-            AVG(media_final) avg_media_final,
-            AVG(freq_turma) avg_freq_turma,
-            ano,
-            semestre,
-            cod_uffs,
-            cod_ccr,
-            nome_ccr,
-            lista_docentes_ch,
-            data_atualizacao
-        FROM
-            'graduacao_historico/graduacao_historico' as h
-        WHERE
-            cod_ccr = ?
-        GROUP BY
-            ano, semestre, sit_turma
-        ", [$id]);
+            SELECT
+                sit_turma,
+                COUNT(sit_turma) qtd_sit_turma,
+                AVG(media_final) avg_media_final,
+                AVG(freq_turma) avg_freq_turma,
+                ano,
+                semestre,
+                cod_uffs,
+                cod_ccr,
+                nome_ccr,
+                lista_docentes_ch,
+                data_atualizacao
+            FROM
+                'graduacao_historico/graduacao_historico' as h
+            WHERE
+                cod_ccr = ?
+            GROUP BY
+                ano, semestre, sit_turma
+            ", [$codigo]);
 
         $dataset_fields = [
             'sit_turma',
@@ -98,30 +89,66 @@ class Disciplinas extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function get($id)
-    {
-        $normalized_id = strtoupper($id);
-        $available_course_files = $this->findAvailableCourseFiles();
-        $available_course_ids = array_keys($available_course_files);
+    public function info($codigo) {
+        $dados = DB::connection('dados_uffs')->select("
+            SELECT
+                cod_ccr AS codigo,
+                nome_ccr AS nome,
+                cr_ccr AS cr,
+                ch_ccr AS ch,
+                desc_matriz AS matriz,
+                fase_oferta AS fase,
+                nome_campus AS campus,
+                nome_curso AS curso,
+                turno
+            FROM
+                'graduacao_ccrs_matrizes/graduacao_ccrs_matrizes' as c
+            WHERE
+                cod_ccr = ?
+            GROUP BY
+                cod_ccr", [$codigo]);
 
-        if(!in_array($normalized_id, $available_course_ids)) {
-            return response()->json([
-                'message' => 'Disciplina não encontrada',
-                'errors' => [
-                    'general' => ["A disciplina de código '$normalized_id' não foi encontrada."]
-                ]
-            ]);
+        if(count($dados) == 0) {
+            return abort(404);
         }
 
-        $course_path = $available_course_files[$normalized_id];
-        $course = json_decode(file_get_contents($course_path), true);
+        $disciplina = $dados[0];
 
-        $history = $this->findCourseHistory($id);
-        $course['historico'] = $history;
+        $disciplina->historico = $this->findHistoricoDisciplina($codigo);
+        $disciplina->ppc = $this->getInfoPccDisciplina($codigo);
+        
+        return response()->json($disciplina, 200, [], JSON_NUMERIC_CHECK);
+    }
 
-        ksort($course);
+    /**
+     * 
+     *
+     * @return \Illuminate\Http\Response
+     */
+    protected function getInfoPccDisciplina($codigo)
+    {
+        $codigo = strtoupper($codigo);
+        $arquivosDisciplinas = $this->findArquivosDisciplinasDisponiveis();
+        $codigosDisciplinas = array_keys($arquivosDisciplinas);
 
-        return response()->json($course, 200, [], JSON_NUMERIC_CHECK);
+        if(!in_array($codigo, $codigosDisciplinas)) {
+            return [
+                'ementa' => '',
+                'objetivo' => '',
+                'referencias_basicas' => [],
+                'referencias_complementares' => []
+            ];
+        }
+
+        $pathDisciplina = $arquivosDisciplinas[$codigo];
+        $info = json_decode(file_get_contents($pathDisciplina), true);
+
+        unset($info['creditos'],
+              $info['codigo'],
+              $info['horas'],
+              $info['nome']);
+
+        return $info;
     }
 
     /**
@@ -130,11 +157,44 @@ class Disciplinas extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function codigos(Request $request)
     {
-        $available_course_files = $this->findAvailableCourseFiles();
-        $course_ids = array_keys($available_course_files);
+        $disciplinas = DB::connection('dados_uffs')->select(
+            "SELECT cod_ccr FROM 'graduacao_ccrs_matrizes/graduacao_ccrs_matrizes' GROUP BY cod_ccr");
+        
+        $valores = collect($disciplinas)->map(function($item) {
+            return $item->cod_ccr;
+        });
 
-        return $course_ids;
+        return response()->json($valores, 200, [], JSON_NUMERIC_CHECK);
+    }
+
+    /**
+     * 
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function lista(Request $request)
+    {
+        $disciplinas = DB::connection('dados_uffs')->select("
+            SELECT
+                cod_ccr AS codigo,
+                nome_ccr AS nome,
+                cr_ccr AS cr,
+                ch_ccr AS ch,
+                desc_matriz AS matriz,
+                fase_oferta AS fase,
+                nome_campus AS campus,
+                nome_curso AS curso,
+                turno
+            FROM
+                'graduacao_ccrs_matrizes/graduacao_ccrs_matrizes' as c
+            WHERE
+                1
+            GROUP BY
+                cod_ccr");
+        
+        return response()->json($disciplinas, 200, [], JSON_NUMERIC_CHECK);
     }
 }
