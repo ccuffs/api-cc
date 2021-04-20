@@ -12,15 +12,6 @@ use Illuminate\Support\Str;
 class Aluno extends Controller
 {
     /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct() {
-        $this->middleware('auth:sanctum');
-    }
-
-    /**
      * 
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
