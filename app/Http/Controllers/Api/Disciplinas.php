@@ -132,12 +132,7 @@ class Disciplinas extends Controller
         $codigosDisciplinas = array_keys($arquivosDisciplinas);
 
         if(!in_array($codigo, $codigosDisciplinas)) {
-            return [
-                'ementa' => '',
-                'objetivo' => '',
-                'referencias_basicas' => [],
-                'referencias_complementares' => []
-            ];
+            return null;
         }
 
         $pathDisciplina = $arquivosDisciplinas[$codigo];
