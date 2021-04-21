@@ -51,6 +51,14 @@ return [
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
         ],
 
+        'pessoas' => [
+            'driver' => 'sqlite',
+            'url' => env('DATABASE_URL'),
+            'database' => env('DB_DATABASE_UFFS_PERSONEL', database_path('external/uffs-personnel/info/uffs-personnel.sqlite')),
+            'prefix' => '',
+            'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
+        ],        
+
         'mysql' => [
             'driver' => 'mysql',
             'url' => env('DATABASE_URL'),
