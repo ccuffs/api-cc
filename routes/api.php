@@ -5,8 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Auth;
 use App\Http\Controllers\Api\Curso;
 use App\Http\Controllers\Api\Aluno;
-use App\Http\Controllers\Api\Historico;
 use App\Http\Controllers\Api\Disciplinas;
+use App\Http\Controllers\Api\Servidores;
 
 /*
 |--------------------------------------------------------------------------
