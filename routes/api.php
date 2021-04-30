@@ -37,6 +37,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Informações sobre servidores da UFFS
     Route::get('/servidores/busca', [Servidores::class, 'busca']);
+    Route::get('/servidores', [Servidores::class, 'lista']);
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {

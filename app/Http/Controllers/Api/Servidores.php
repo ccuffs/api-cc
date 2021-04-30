@@ -9,26 +9,19 @@ use App\Utils\Sanitizer;
 
 class Servidores extends Controller
 {
-    /**
-     * 
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function busca(Request $request)
-    {
-        $nome = $request->get('nome', '');
-        $iduffs = $request->get('iduffs', '');
-        $limit = $request->get('limit', 10);
-
-        $query = DB::connection('pessoas')->table('personnel')->limit($limit);
-
-        if (!empty($nome)) {
-            $query->whereRaw('name LIKE ?', ['%' . Sanitizer::clean($nome) .'%']);
+    protected function findServidores(array $campos = [], $limit = 0) {
+        $query = DB::connection('pessoas')->table('personnel');
+        
+        if ($limit > 0) {
+            $query->limit($limit);
         }
 
-        if (!empty($iduffs)) {
-            $query->whereRaw('uid LIKE ?', ['%' . Sanitizer::clean($iduffs) .'%']);
+        if (isset($campos['nome'])) {
+            $query->whereRaw('name LIKE ?', ['%' . Sanitizer::clean($campos['nome']) .'%']);
+        }
+
+        if (isset($campos['uid'])) {
+            $query->whereRaw('uid LIKE ?', ['%' . Sanitizer::clean($campos['uid']) .'%']);
         }        
         
         $personnel = $query->get();
@@ -51,10 +44,42 @@ class Servidores extends Controller
             $item->cargo = $person->job;
             $item->notas = $person->notes;
 
-            $result[$person->uid] = $item;
+            $result[] = $item;
         }
 
         $values = array_values($result);
+        return $values;
+    }
+
+    /**
+     * 
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function lista(Request $request)
+    {
+        $values = $this->findServidores();
+        return response()->json($values, 200, [], JSON_NUMERIC_CHECK);
+    } 
+
+    /**
+     * 
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function busca(Request $request)
+    {
+        $nome = $request->get('nome', '');
+        $iduffs = $request->get('iduffs', '');
+        $limit = $request->get('limit', 10);
+
+        $values = $this->findServidores([
+            'nome' => $nome,
+            'uid' => $iduffs
+        ], $limit);
+
         return response()->json($values, 200, [], JSON_NUMERIC_CHECK);
     }    
 }
