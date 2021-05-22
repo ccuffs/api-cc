@@ -34,6 +34,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Informações sobre grupos de alunos (cursos, grupos, etc)
     Route::get('/cursos/{iduffs}/alunos', [Curso::class, 'alunos']);
+    Route::get('/cursos/{iduffs}/conclusoes', [Curso::class, 'conclusoes']);
 
     // Informações sobre servidores da UFFS
     Route::get('/servidores/busca', [Servidores::class, 'busca']);

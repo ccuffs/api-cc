@@ -10,17 +10,12 @@ use Illuminate\Support\Facades\Cache;
 
 class Curso extends Controller
 {
-    /**
-     * Lista dos os alunos de um determinado curso.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function alunos(Request $request, $iduffs)
+    protected function getCredenciais($iduffs)
     {
         $scraper = Scraper::where('actor', $iduffs)->first();
 
         if(!$scraper) {
-            return response()->json(['error' => "O curso identificado por '$iduffs' não foi encontrado."], 500);
+            throw new \Exception("O curso identificado por '$iduffs' não foi encontrado.");
         }
 
         $credenciais = [
@@ -28,13 +23,42 @@ class Curso extends Controller
             'senha' => $scraper->access_password
         ];
 
+        return $credenciais;
+    }
+
+    /**
+     * Lista dos os alunos de um determinado curso.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function conclusoes(Request $request, $iduffs)
+    {
+        $credenciais = $this->getCredenciais($iduffs);
+        $cacheKey = 'conclusoes:' . $iduffs;
+        $cacheTtl = now()->addDays(7);
+
+        $info = Cache::remember($cacheKey, $cacheTtl, function() use ($credenciais) {
+            return SgaScraper::usando($credenciais)->conclusoes()->get();
+        });
+
+        return $this->json($info);
+    }
+
+    /**
+     * Lista dos os alunos de um determinado curso.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function alunos(Request $request, $iduffs)
+    {
+        $credenciais = $this->getCredenciais($iduffs);
         $cacheKey = 'alunos:' . $iduffs;
-        $cacheTtl = now()->addDays(2);
+        $cacheTtl = now()->addDays(7);
 
         $info = Cache::remember($cacheKey, $cacheTtl, function() use ($credenciais) {
             return SgaScraper::usando($credenciais)->alunos()->get();
         });
 
-        return response()->json($info, 200, [], JSON_NUMERIC_CHECK);
+        return $this->json($info);
     }
 }
