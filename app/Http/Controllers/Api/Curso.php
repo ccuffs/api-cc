@@ -34,12 +34,7 @@ class Curso extends Controller
     public function conclusoes(Request $request, $iduffs)
     {
         $credenciais = $this->getCredenciais($iduffs);
-        $cacheKey = 'conclusoes:' . $iduffs;
-        $cacheTtl = now()->addDays(7);
-
-        $info = Cache::remember($cacheKey, $cacheTtl, function() use ($credenciais) {
-            return SgaScraper::usando($credenciais)->conclusoes()->get();
-        });
+        $info = SgaScraper::usando($credenciais)->conclusoes()->get();
 
         return $this->json($info);
     }
@@ -52,12 +47,7 @@ class Curso extends Controller
     public function alunos(Request $request, $iduffs)
     {
         $credenciais = $this->getCredenciais($iduffs);
-        $cacheKey = 'alunos:' . $iduffs;
-        $cacheTtl = now()->addDays(7);
-
-        $info = Cache::remember($cacheKey, $cacheTtl, function() use ($credenciais) {
-            return SgaScraper::usando($credenciais)->alunos()->get();
-        });
+        $info = SgaScraper::usando($credenciais)->alunos()->get();
 
         return $this->json($info);
     }

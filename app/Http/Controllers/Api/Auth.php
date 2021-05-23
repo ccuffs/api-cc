@@ -14,7 +14,7 @@ class Auth extends Controller
      * @return void
      */
     public function __construct() {
-        // This controller is open to the inter-webz.
+        $this->middleware('doNotCacheResponse');
     }
 
     private function generatePassport($uid, $email) {

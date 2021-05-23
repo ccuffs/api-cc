@@ -8,7 +8,7 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^7.3",
+        "php": "^7.4",
         "betterapp/laravel-db-encrypter": "^1.0",
         "ccuffs/auth-iduffs": "^1.0",
         "fideloper/proxy": "^4.2",
@@ -19,7 +19,8 @@
         "laravel/jetstream": "^1.5",
         "laravel/sanctum": "^2.6",
         "laravel/tinker": "^2.0",
-        "livewire/livewire": "^2.0"
+        "livewire/livewire": "^2.0",
+        "spatie/laravel-responsecache": "^6.6"
     },
     "require-dev": {
         "facade/ignition": "^2.3.6",
