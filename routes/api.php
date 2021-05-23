@@ -29,8 +29,9 @@ Route::get('/disciplinas/{codigo}', [Disciplinas::class, 'info']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
     // Informações de cada aluno (histórico, etc)
-    Route::get('/alunos/{entity}/historico', [Aluno::class, 'index']);
-    Route::get('/alunos/{entity}', [Aluno::class, 'index']);
+    Route::get('/alunos/{entity}/historico', [Aluno::class, 'historico']);
+    Route::get('/alunos/{entity}/historico.pdf', [Aluno::class, 'historicoPdf']);
+    Route::get('/alunos/{entity}', [Aluno::class, 'info']);
 
     // Informações sobre grupos de alunos (cursos, grupos, etc)
     Route::get('/cursos/{iduffs}/alunos', [Curso::class, 'alunos']);

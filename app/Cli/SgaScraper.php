@@ -100,10 +100,18 @@ class SgaScraper
         return $this;
     }
 
-
-    public function historico()
+    public function historico($pdf = false, $conclusao = false)
     {
         $this->pushPedido('--historico');
+
+        if($pdf) {
+            $this->pushPedido('--historico-pdf');
+        }
+
+        if($conclusao) {
+            $this->pushPedido('--conclusao-pdf');
+        }        
+
         return $this;
     }
 

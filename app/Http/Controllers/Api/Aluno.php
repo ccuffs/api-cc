@@ -11,33 +11,61 @@ use Illuminate\Support\Str;
 
 class Aluno extends Controller
 {
-    /**
-     * 
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function index(Entity $entity)
+    protected function getCredenciais(Entity $entity)
     {
         $data = json_decode($entity->data);
         $scraper = $entity->scrapers->first();
 
         if(!$scraper) {
-            return response()->json(['error' => 'Entidade não possui scraper registrado para uso.'], 500);
+            throw new \Exception('Entidade não possui scraper registrado para uso.');
         }
 
         $credenciais = [
             'usuario' => $scraper->access_user,
             'senha' => $scraper->access_password,
-            'matricula' => $data->matricula
+            'matricula' => $data->matricula,
+            'scrapper' => $scraper->actor
         ];
 
-        $cacheKey = 'aluno:' . $data->matricula . ':' . $scraper->actor;
-        $cacheTtl = now()->addDays(2);
+        return $credenciais;
+    }
 
-        $info = Cache::remember($cacheKey, $cacheTtl, function() use ($credenciais) {
-            return SgaScraper::usando($credenciais)->historico()->get();
-        });
+    /**
+     * 
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function info(Entity $entity)
+    {
+        $credenciais = $this->getCredenciais($entity);
+        $info = SgaScraper::usando($credenciais)->historico()->get();
 
-        return response()->json($info, 200, [], JSON_NUMERIC_CHECK);
+        return $this->json($info);
+    }
+
+    /**
+     * 
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function historicoPdf(Entity $entity)
+    {
+        $credenciais = $this->getCredenciais($entity);
+        $info = SgaScraper::usando($credenciais)->historico(true, true)->get();
+
+        return response()->file($info['pdfPath']);
+    }
+
+    /**
+     * 
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function historico(Entity $entity)
+    {
+        $credenciais = $this->getCredenciais($entity);
+        $info = SgaScraper::usando($credenciais)->historico()->get();
+
+        return $this->json($info);
     }
 }
